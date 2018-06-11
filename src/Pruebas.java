@@ -1,60 +1,114 @@
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.PinPullResistance;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
+import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
+import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 /**
- * This example code demonstrates how to perform simple state
- * control of a GPIO pin on the Raspberry Pi.
+ * Esta clase permite probar que las conexiones de la Raspberry a los tres
+ * interruptores y tres pulsadores son correctas.
+ * 
+ * @author Carlos Sogorb
  *
- * @author Robert Savage
  */
 public class Pruebas {
 
-    public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException {
+		disco();
+	}
 
-        System.out.println("<--Pi4J--> GPIO Control Example ... started.");
+	private static void test() throws InterruptedException {
 
-        // create gpio controller
-        final GpioController gpioController = GpioFactory.getInstance();
+		// Controlador de GPIOs.
+		GpioController gpioController = GpioFactory.getInstance();
 
-        // provision gpio pin #01 as an output pin and turn on
-        final GpioPinDigitalOutput pin = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_01, "MyLED", PinState.HIGH);
+		// Pines conectados a LEDs.
+//		GpioPinDigitalOutput led1 = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_08, "Led 1", PinState.LOW);
+//		GpioPinDigitalOutput led2 = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_09, "Led 2", PinState.LOW);
+//		GpioPinDigitalOutput led3 = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_07, "Led 2", PinState.LOW);
 
-        // set shutdown state for this pin
-        pin.setShutdownOptions(true, PinState.LOW);
+		// Pines conectados a botones.
+		GpioPinDigitalInput boton1 = gpioController.provisionDigitalInputPin(RaspiPin.GPIO_27,
+				PinPullResistance.PULL_DOWN);
+//		GpioPinDigitalInput boton2 = gpioController.provisionDigitalInputPin(RaspiPin.GPIO_02,
+//				PinPullResistance.PULL_DOWN);
+//		GpioPinDigitalInput boton3 = gpioController.provisionDigitalInputPin(RaspiPin.GPIO_03,
+//				PinPullResistance.PULL_DOWN);
 
-        System.out.println("--> GPIO state should be: ON");
+		// Iniciamos el test.
+		System.out.println("Iniciando el test");
+		System.out.println("========================");
 
-        Thread.sleep(5000);
+//		// Test de leds.
+//		System.out.println("LED 1 encendido ...");
+//		led1.high();
+//		// led1.blink(200);
+//		Thread.sleep(2000);
+//		// led1.blink(0);
+//		led1.low();
+//
+//		System.out.println("LED 2 encendido ...");
+//		led2.high();
+//		// led2.blink(200);
+//		Thread.sleep(2000);
+//		// led2.blink(0);
+//		led2.low();
+//
+//		System.out.println("LED 3 parpadeando ...");
+//		led3.high();
+//		// led3.blink(200);
+//		Thread.sleep(2000);
+//		// led3.blink(0);
+//		led3.low();
+//
+//		System.out.println("(Todos los LEDs apagados)");
+//		System.out.println("\nVe pulsando los botones y observa los mensajes de la consola ...");
+		// Test de botones.
 
-        // turn off gpio pin #01
-        pin.low();
-        System.out.println("--> GPIO state should be: OFF");
+		// create and register gpio pin listener
+		boton1.addListener(new GpioPinListenerDigital() {
+			@Override
+			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+				System.out.println("Pulsado el boton 1");
+			}
+		});
 
-        Thread.sleep(5000);
+//		boton2.addListener(new GpioPinListenerDigital() {
+//			@Override
+//			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+//				System.out.println("Pulsado el boton 2");
+//			}
+//		});
+//
+//		boton3.addListener(new GpioPinListenerDigital() {
+//			@Override
+//			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+//				System.out.println("Pulsado el boton 3");
+//			}
+//		});
 
-        // toggle the current state of gpio pin #01 (should turn on)
-        pin.toggle();
-        System.out.println("--> GPIO state should be: ON");
+		while (true) {
+			Thread.sleep(500);
+		}
+	}
 
-        Thread.sleep(5000);
+	private static void disco() {
+		// Controlador de GPIOs.
+		GpioController gpioController = GpioFactory.getInstance();
 
-        // toggle the current state of gpio pin #01  (should turn off)
-        pin.toggle();
-        System.out.println("--> GPIO state should be: OFF");
+		// Pines conectados a LEDs.
+		GpioPinDigitalOutput led1 = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_08, "Led 1", PinState.LOW);
+		GpioPinDigitalOutput led2 = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_09, "Led 2", PinState.LOW);
+		GpioPinDigitalOutput led3 = gpioController.provisionDigitalOutputPin(RaspiPin.GPIO_07, "Led 2", PinState.LOW);
 
-        Thread.sleep(5000);
+		led1.blink(500);
+		led2.blink(800);
+		led3.blink(1100);
 
-        // turn on gpio pin #01 for 1 second and then off
-        System.out.println("--> GPIO state should be: ON for only 1 second");
-        pin.pulse(1000, true); // set second argument to 'true' use a blocking call
+	}
 
-        // stop all GPIO activity/threads by shutting down the GPIO controller
-        // (this method will forcefully shutdown all GPIO monitoring threads and scheduled tasks)
-        gpioController.shutdown();
-
-        System.out.println("Exiting ControlGpioExample");
-    }
 }
